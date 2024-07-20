@@ -152,7 +152,6 @@ namespace TheatreApp.Web.Controllers
                 ModelState.AddModelError("", "Cannot delete author because they are associated with one or more movies.");
                 return View(author);
             }
-
             _context.Authors.Remove(author);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -133,11 +133,6 @@ namespace TheatreApp.Web.Controllers
         // GET: Movies/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
             var movie = await _context.Movies.Include(m => m.MovieAuthors)
                                              .ThenInclude(ma => ma.Author)
                                              .FirstOrDefaultAsync(m => m.MovieID == id);

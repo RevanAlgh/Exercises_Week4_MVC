@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheatreApp.Web.Data;
 
@@ -11,9 +12,11 @@ using TheatreApp.Web.Data;
 namespace TheatreApp.Web.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240720172912_Modification3")]
+    partial class Modification3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,11 +164,9 @@ namespace TheatreApp.Web.Migrations
 
             modelBuilder.Entity("MovieApi.Models.Author", b =>
                 {
-                    b.Property<int>("AuthorID")
+                    b.Property<Guid>("AuthorID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuthorID"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AuthorName")
                         .IsRequired()
@@ -179,11 +180,9 @@ namespace TheatreApp.Web.Migrations
 
             modelBuilder.Entity("TheaterApp.Models.Movie", b =>
                 {
-                    b.Property<int>("MovieID")
+                    b.Property<Guid>("MovieID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MovieID"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AuthorID")
                         .HasColumnType("int");
@@ -218,11 +217,11 @@ namespace TheatreApp.Web.Migrations
 
             modelBuilder.Entity("TheaterApp.Models.MovieAuthor", b =>
                 {
-                    b.Property<int>("MovieID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("MovieID")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AuthorID")
-                        .HasColumnType("int");
+                    b.Property<Guid>("AuthorID")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("MovieID", "AuthorID");
 
