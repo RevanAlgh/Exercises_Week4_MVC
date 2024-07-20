@@ -10,9 +10,6 @@ namespace TheatreApp.Web.Areas.Identity.Data;
 // Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser
 {
-    [PersonalData]
-    [Column(TypeName = "navrchar(100)")]
-    public string AdminName { get; set; }
 
 }
 
