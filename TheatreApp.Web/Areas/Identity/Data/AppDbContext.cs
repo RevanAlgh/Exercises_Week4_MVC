@@ -13,6 +13,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+
     public DbSet<Movie> Movies { get; set; }
     public DbSet<Author> Authors { get; set; }
     public DbSet<MovieAuthor> MovieAuthors { get; set; }

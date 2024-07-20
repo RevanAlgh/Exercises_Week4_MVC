@@ -9,13 +9,23 @@ namespace TheaterApp.Models
         public int MovieID { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
-        [MaxLength(20)]
+        [MaxLength(100, ErrorMessage = "Title cannot exceed 100 characters")]
         public string MovieTitle { get; set; }
+
+        [Range(0, 10, ErrorMessage = "IMDB Rating must be between 0 and 10")]
         public float ImdbRating { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Release year is required")]
+        [Range(1900, int.MaxValue, ErrorMessage = "Year Released must be a valid year (1900 or later)")]
         public int YearReleased { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Budget must be a non-negative value")]
         public decimal Budget { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Box Office must be a non-negative value")]
         public decimal BoxOffice { get; set; }
+
+        [MaxLength(20, ErrorMessage = "Language cannot exceed 20 characters")]
         public string Language { get; set; }
 
         public int AuthorID { get; set; }
