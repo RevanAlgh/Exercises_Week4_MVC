@@ -8,10 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using MovieApi.Models;
 using TheaterApp.Models;
 using TheatreApp.Web.Data;
+using TheatreApp.Web.Models.DTOs;
+using TheatreApp.Web.Models.DTOs.MoviesDTOs;
 
 namespace TheatreApp.Web.Controllers
 {
-    public class MoviesController : Controller
+    [Route("api/movies")]
+    [ApiController]
+    public class MoviesController : ControllerBase
     {
         private readonly AppDbContext _context;
 
@@ -20,147 +24,87 @@ namespace TheatreApp.Web.Controllers
             _context = context;
         }
 
-        // GET: Movies
-        public async Task<IActionResult> Index()
-        {
-            var movies = await _context.Movies.Include(m => m.MovieAuthors)
-                                              .ThenInclude(ma => ma.Author)
-                                              .ToListAsync();
-            return View(movies);
-        }
-
-        // GET: Movies/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-            var movie = await _context.Movies.Include(m => m.MovieAuthors)
-                                             .ThenInclude(ma => ma.Author)
-                                             .FirstOrDefaultAsync(m => m.MovieID == id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
-            return View(movie);
-        }
-
-        // GET: Movies/Create
-        public IActionResult Create()
-        {
-            ViewBag.Authors = new SelectList(_context.Authors, "AuthorID", "AuthorName");
-            return View();
-        }
-
-        // POST: Movies/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MovieID,MovieTitle,ImdbRating,YearReleased,Budget,BoxOffice,Language,AuthorID")] Movie movie, int authorID)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Movies.Add(movie);
-                await _context.SaveChangesAsync();
-
-                if (authorID != 0)
-                {
-                    _context.MovieAuthors.Add(new MovieAuthor { MovieID = movie.MovieID, AuthorID = authorID });
-                    await _context.SaveChangesAsync();
-                }
-
-                return RedirectToAction(nameof(Index));
-            }
-            ViewBag.Authors = new SelectList(_context.Authors, "AuthorID", "AuthorName");
-            return View(movie);
-        }
-
-        // GET: Movies/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return BadRequest();
-            }
-
-            var movie = await _context.Movies.Include(m => m.MovieAuthors).ThenInclude(ma => ma.Author)
-                                             .FirstOrDefaultAsync(m => m.MovieID == id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
-
-            ViewBag.Authors = new SelectList(_context.Authors, "AuthorID", "AuthorName");
-            return View(movie);
-        }
-
-        // POST: Movies/Edit/5
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Movie movie, int authorID)
-        {
-            if (id != movie.MovieID)
-            {
-                return BadRequest();
-            }
-
-            if (ModelState.IsValid)
-            {
-                _context.Entry(movie).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                var movieAuthor = await _context.MovieAuthors.FirstOrDefaultAsync(ma => ma.MovieID == movie.MovieID);
-                if (movieAuthor != null)
-                {
-                    _context.MovieAuthors.Remove(movieAuthor);
-                    await _context.SaveChangesAsync();
-                }
-
-                if (authorID != 0)
-                {
-                    _context.MovieAuthors.Add(new MovieAuthor { MovieID = movie.MovieID, AuthorID = authorID });
-                    await _context.SaveChangesAsync();
-                }
-
-                return RedirectToAction(nameof(Index));
-            }
-            ViewBag.Authors = new SelectList(_context.Authors, "AuthorID", "AuthorName");
-            return View(movie);
-        }
-
-        // GET: Movies/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            var movie = await _context.Movies.Include(m => m.MovieAuthors)
-                                             .ThenInclude(ma => ma.Author)
-                                             .FirstOrDefaultAsync(m => m.MovieID == id);
-            if (movie == null)
-            {
-                return NotFound();
-            }
-            return View(movie);
-        }
-
-        // POST: Movies/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetMovie(int id)
         {
             var movie = await _context.Movies.FindAsync(id);
-            if (movie != null)
+            if (movie == null)
             {
-                _context.Movies.Remove(movie);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var movieDto = new MovieDto
+            {
+                MovieID = movie.MovieID,
+                MovieTitle = movie.MovieTitle,
+                ImdbRating = movie.ImdbRating,
+                YearReleased = movie.YearReleased,
+                Budget = movie.Budget,
+                BoxOffice = movie.BoxOffice,
+                Language = movie.Language,
+                AuthorID = movie.AuthorID,
+                MovieAuthors = movie.MovieAuthors.ToList()
+            };
+
+            return Ok(movieDto);
         }
 
-        private bool MovieExists(int id)
+        [HttpPost]
+        public async Task<IActionResult> CreateMovie(CreateMovieDto createMovieDto)
         {
-            return _context.Movies.Any(e => e.MovieID == id);
+            var movie = new Movie
+            {
+                MovieTitle = createMovieDto.MovieTitle,
+                ImdbRating = createMovieDto.ImdbRating,
+                YearReleased = createMovieDto.YearReleased,
+                Budget = createMovieDto.Budget,
+                BoxOffice = createMovieDto.BoxOffice,
+                Language = createMovieDto.Language,
+                AuthorID = createMovieDto.AuthorID
+            };
+
+            _context.Movies.Add(movie);
+            await _context.SaveChangesAsync();
+
+            return Ok(movie);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDto updateMovieDto)
+        {
+            var movie = await _context.Movies.FindAsync(id);
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
+            movie.MovieTitle = updateMovieDto.MovieTitle;
+            movie.ImdbRating = updateMovieDto.ImdbRating;
+            movie.YearReleased = updateMovieDto.YearReleased;
+            movie.Budget = updateMovieDto.Budget;
+            movie.BoxOffice = updateMovieDto.BoxOffice;
+            movie.Language = updateMovieDto.Language;
+            movie.AuthorID = updateMovieDto.AuthorID;
+
+            _context.Movies.Update(movie);
+            await _context.SaveChangesAsync();
+
+            return Ok(movie);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMovie(int id)
+        {
+            var movie = await _context.Movies.FindAsync(id);
+            if (movie == null)
+            {
+                return NotFound();
+            }
+
+            _context.Movies.Remove(movie);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

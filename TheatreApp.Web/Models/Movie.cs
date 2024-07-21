@@ -16,7 +16,7 @@ namespace TheaterApp.Models
         public float ImdbRating { get; set; }
 
         [Required(ErrorMessage = "Release year is required")]
-        [Range(1900, int.MaxValue, ErrorMessage = "Year Released must be a valid year (1900 or later)")]
+        [Range(1900, 2100, ErrorMessage = "Year Released must be a valid year (1900 or later)")]
         public int YearReleased { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Budget must be a non-negative value")]
@@ -31,5 +31,63 @@ namespace TheaterApp.Models
         public int AuthorID { get; set; }
 
         public ICollection<MovieAuthor> MovieAuthors { get; set; } = new Collection<MovieAuthor>();
+
+        public Movie()
+        {
+
+        }
+        public Movie(int movieID,
+            string movieTitle,
+            float imdbRating,
+            int yearReleased,
+            decimal budget,
+            decimal boxOffice,
+            string language,
+            int authorID = 0)
+        {
+            MovieID = movieID;
+            MovieTitle = movieTitle;
+            ImdbRating = imdbRating;
+            YearReleased = yearReleased;
+            Budget = budget;
+            BoxOffice = boxOffice;
+            Language = language;
+            AuthorID = authorID;
+        }
+
+        public void Update(string movieTitle,
+            float imdbRating,
+            int yearReleased,
+            decimal budget,
+            decimal boxOffice,
+            string language,
+            int authorID = 0)
+        {
+            this.MovieTitle = movieTitle;
+            this.ImdbRating = imdbRating;
+            this.YearReleased = yearReleased;
+            this.Budget = budget;
+            this.BoxOffice = boxOffice;
+            this.Language = language;
+            this.AuthorID = authorID;
+        }
+
+        public void Delete(string movieTitle,
+            float imdbRating,
+            int yearReleased,
+            decimal budget,
+            decimal boxOffice,
+            string language,
+            int authorID = 0)
+        {
+            this.MovieTitle = movieTitle;
+            this.ImdbRating = imdbRating;
+            this.YearReleased = yearReleased;
+            this.Budget = budget;
+            this.BoxOffice = boxOffice;
+            this.Language = language;
+            this.AuthorID = authorID;
+        }
+
     }
 }

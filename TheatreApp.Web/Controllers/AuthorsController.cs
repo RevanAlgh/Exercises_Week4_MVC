@@ -7,10 +7,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Models;
 using TheatreApp.Web.Data;
+using TheatreApp.Web.Models.DTOs.AuthorsDTOs;
 
 namespace TheatreApp.Web.Controllers
 {
-    public class AuthorsController : Controller
+    [Route("api/authors")]
+    [ApiController]
+    public class AuthorsController : ControllerBase
     {
         private readonly AppDbContext _context;
 
@@ -19,147 +22,70 @@ namespace TheatreApp.Web.Controllers
             _context = context;
         }
 
-        // GET: Authors
-        public async Task<IActionResult> Index()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAuthor(int id)
         {
-            return View(await _context.Authors.ToListAsync());
-        }
-
-        // GET: Authors/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.AuthorID == id);
+            var author = await _context.Authors.FindAsync(id);
             if (author == null)
             {
                 return NotFound();
             }
 
-            return View(author);
+            var authorDto = new AuthorDto
+            {
+                AuthorID = author.AuthorID,
+                AuthorName = author.AuthorName,
+                MovieAuthors = author.MovieAuthors.ToList()
+            };
+
+            return Ok(authorDto);
         }
 
-        // GET: Authors/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Authors/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("AuthorID,AuthorName")] Author author)
+        public async Task<IActionResult> CreateAuthor(CreateAuthorDto createAuthorDto)
         {
-            if (ModelState.IsValid)
+            var author = new Author
             {
-                _context.Add(author);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(author);
+                AuthorName = createAuthorDto.AuthorName
+            };
+
+            _context.Authors.Add(author);
+            await _context.SaveChangesAsync();
+
+            return Ok(author);
         }
 
-        // GET: Authors/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAuthor(int id, UpdateAuthorDto updateAuthorDto)
+        {
             var author = await _context.Authors.FindAsync(id);
             if (author == null)
             {
                 return NotFound();
             }
-            return View(author);
+
+            author.AuthorName = updateAuthorDto.AuthorName;
+
+            _context.Authors.Update(author);
+            await _context.SaveChangesAsync();
+
+            return Ok(author);
         }
 
-        // POST: Authors/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("AuthorID,AuthorName")] Author author)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAuthor(int id)
         {
-            if (id != author.AuthorID)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(author);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AuthorExists(author.AuthorID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(author);
-        }
-
-        // GET: Authors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.AuthorID == id);
+            var author = await _context.Authors.FindAsync(id);
             if (author == null)
             {
                 return NotFound();
             }
 
-            return View(author);
-        }
-
-        // POST: Authors/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var author = await _context.Authors.FindAsync(id);
-            if (author != null)
-            {
-                _context.Authors.Remove(author);
-            }
-
-            var hasMovies = await _context.MovieAuthors.AnyAsync(ma => ma.AuthorID == id);
-
-            if (hasMovies)
-            {
-                ModelState.AddModelError("", "Cannot delete author because they are associated with one or more movies.");
-                return View(author);
-            }
             _context.Authors.Remove(author);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool AuthorExists(int id)
-        {
-            return _context.Authors.Any(e => e.AuthorID == id);
+            return NoContent();
         }
     }
 }
