@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using TheatreApp.Web.Models.DTOs.MoviesDTOs;
 namespace TheatreApp.Web.Controllers
 {
     [Route("api/movies")]
+    [Authorize]
     [ApiController]
     public class MoviesController : ControllerBase
     {
@@ -24,6 +26,7 @@ namespace TheatreApp.Web.Controllers
             _context = context;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMovie(int id)
         {
@@ -49,6 +52,7 @@ namespace TheatreApp.Web.Controllers
             return Ok(movieDto);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateMovie(CreateMovieDto createMovieDto)
         {
@@ -68,7 +72,7 @@ namespace TheatreApp.Web.Controllers
 
             return Ok(movie);
         }
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDto updateMovieDto)
         {
@@ -92,6 +96,7 @@ namespace TheatreApp.Web.Controllers
             return Ok(movie);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {

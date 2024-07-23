@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using TheatreApp.Web.Models.DTOs.AuthorsDTOs;
 namespace TheatreApp.Web.Controllers
 {
     [Route("api/authors")]
+    [Authorize]
     [ApiController]
     public class AuthorsController : ControllerBase
     {
@@ -22,6 +24,7 @@ namespace TheatreApp.Web.Controllers
             _context = context;
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAuthor(int id)
         {
@@ -41,6 +44,7 @@ namespace TheatreApp.Web.Controllers
             return Ok(authorDto);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateAuthor(CreateAuthorDto createAuthorDto)
         {
@@ -55,7 +59,7 @@ namespace TheatreApp.Web.Controllers
             return Ok(author);
         }
 
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuthor(int id, UpdateAuthorDto updateAuthorDto)
         {
@@ -73,6 +77,7 @@ namespace TheatreApp.Web.Controllers
             return Ok(author);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAuthor(int id)
         {

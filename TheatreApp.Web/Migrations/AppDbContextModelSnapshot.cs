@@ -170,7 +170,7 @@ namespace TheatreApp.Web.Migrations
 
                     b.HasKey("AuthorID");
 
-                    b.ToTable("Authors");
+                    b.ToTable("Authors", (string)null);
                 });
 
             modelBuilder.Entity("TheaterApp.Models.Movie", b =>
@@ -210,7 +210,7 @@ namespace TheatreApp.Web.Migrations
 
                     b.HasKey("MovieID");
 
-                    b.ToTable("Movies");
+                    b.ToTable("Movies", (string)null);
                 });
 
             modelBuilder.Entity("TheaterApp.Models.MovieAuthor", b =>
@@ -225,7 +225,7 @@ namespace TheatreApp.Web.Migrations
 
                     b.HasIndex("AuthorID");
 
-                    b.ToTable("MovieAuthors");
+                    b.ToTable("MovieAuthors", (string)null);
                 });
 
             modelBuilder.Entity("TheatreApp.Web.Areas.Identity.Data.ApplicationUser", b =>
