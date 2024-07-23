@@ -5,7 +5,7 @@ using TheatreApp.Web.Services;
 
 namespace TheatreApp.Web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/login")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -14,9 +14,7 @@ namespace TheatreApp.Web.Controllers
         public LoginController(JwtService jwtService)
 
         {
-
             _jwtService = jwtService;
-
         }
 
         [HttpPost("/login")]
