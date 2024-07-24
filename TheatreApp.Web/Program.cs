@@ -1,28 +1,35 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 using TheatreApp.Web.Data;
+using TheatreApp.Web.Data.Repositories;
 using TheatreApp.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    });
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnectionString")));
 
-//Register our DB COntext
-builder.Services.AddScoped(typeof(DbContext), typeof(AppDbContext));
-
-// Add services to the container.
-builder.Services.AddControllers();
+// Add CORS policy 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
 
 // Add Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
-
- // Swagger support 
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(c => 
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
@@ -37,8 +44,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-// To Enable authorization using Swagger (JWT)
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+    // To Enable authorization using Swagger (JWT)
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.ApiKey,
@@ -49,28 +56,37 @@ builder.Services.AddSwaggerGen(c =>
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
                 {
-                    {
-                          new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                }
-                            },
-                            new string[] {}
-                    }
-                });
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
-// Implementing JWT
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// Add repositories
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 
+// Add JWT service
+builder.Services.AddScoped<JwtService>();
+
+// Implementing JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
 .AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
-
     {
         ValidateIssuer = true,
         ValidateAudience = true,
@@ -82,8 +98,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 });
 
-builder.Services.AddScoped<JwtService>();
-
+// Build the app
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -94,9 +109,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+
+
+//Database context
+//Repositories
+//JWT service
+//Swagger
+//JWT authentication
+//CORS

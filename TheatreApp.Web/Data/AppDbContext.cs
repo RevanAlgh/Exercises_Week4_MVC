@@ -17,8 +17,6 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
-
 
         modelBuilder.Entity<MovieAuthor>()
             .HasKey(ma => new { ma.MovieID, ma.AuthorID });
@@ -40,5 +38,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Movie>()
             .Property(m => m.BoxOffice)
             .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Author>()
+        .Property(a => a.AuthorID)
+        .ValueGeneratedOnAdd();
+
+        base.OnModelCreating(modelBuilder);
     }
 }

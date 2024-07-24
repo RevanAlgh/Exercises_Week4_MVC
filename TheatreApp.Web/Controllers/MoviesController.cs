@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MovieApi.Models;
 using TheaterApp.Models;
 using TheatreApp.Web.Data;
-using TheatreApp.Web.Models.DTOs;
 using TheatreApp.Web.Models.DTOs.MoviesDTOs;
 
 namespace TheatreApp.Web.Controllers
@@ -19,17 +12,16 @@ namespace TheatreApp.Web.Controllers
     [ApiController]
     public class MoviesController : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public MoviesController(AppDbContext context)
+        private readonly IMovieRepository _movieRepository;
+        public MoviesController(IMovieRepository movieRepository)
         {
-            _context = context;
+            _movieRepository = movieRepository;
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMovie(int id)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _movieRepository.GetByIdAsync(id);
             if (movie == null)
             {
                 return NotFound();
@@ -65,8 +57,7 @@ namespace TheatreApp.Web.Controllers
                 AuthorID = createMovieDto.AuthorID
             };
 
-            _context.Movies.Add(movie);
-            await _context.SaveChangesAsync();
+            await _movieRepository.AddAsync(movie);
 
             return Ok(movie);
         }
@@ -74,7 +65,7 @@ namespace TheatreApp.Web.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMovie(int id, UpdateMovieDto updateMovieDto)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _movieRepository.GetByIdAsync(id);
             if (movie == null)
             {
                 return NotFound();
@@ -88,8 +79,7 @@ namespace TheatreApp.Web.Controllers
             movie.Language = updateMovieDto.Language;
             movie.AuthorID = updateMovieDto.AuthorID;
 
-            _context.Movies.Update(movie);
-            await _context.SaveChangesAsync();
+            await _movieRepository.UpdateAsync(movie);
 
             return Ok(movie);
         }
@@ -97,16 +87,35 @@ namespace TheatreApp.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovie(int id)
         {
-            var movie = await _context.Movies.FindAsync(id);
-            if (movie == null)
+            await _movieRepository.DeleteAsync(id);
+            return Ok(new { message = "Movie deleted successfully." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMovies()
+        {
+            var movies = await _movieRepository.GetAllAsync();
+            if (movies == null || !movies.Any())
             {
                 return NotFound();
             }
 
-            _context.Movies.Remove(movie);
-            await _context.SaveChangesAsync();
+            var movieDtos = movies.Select(movie => new MovieDto
+            {
+                MovieID = movie.MovieID,
+                MovieTitle = movie.MovieTitle,
+                ImdbRating = movie.ImdbRating,
+                YearReleased = movie.YearReleased,
+                Budget = movie.Budget,
+                BoxOffice = movie.BoxOffice,
+                Language = movie.Language,
+                AuthorID = movie.AuthorID,
+                MovieAuthors = movie.MovieAuthors.ToList()
+            }).ToList();
 
-            return NoContent();
+            return Ok(movieDtos);
         }
+
+
     }
 }

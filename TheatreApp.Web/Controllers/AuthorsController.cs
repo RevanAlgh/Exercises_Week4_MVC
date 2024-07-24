@@ -17,17 +17,17 @@ namespace TheatreApp.Web.Controllers
     [ApiController]
     public class AuthorsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IAuthorRepository _authorRepository;
 
-        public AuthorsController(AppDbContext context)
+        public AuthorsController(IAuthorRepository authorRepository)
         {
-            _context = context;
+            _authorRepository = authorRepository;
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAuthor(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
+            var author = await _authorRepository.GetByIdAsync(id);
             if (author == null)
             {
                 return NotFound();
@@ -51,8 +51,7 @@ namespace TheatreApp.Web.Controllers
                 AuthorName = createAuthorDto.AuthorName
             };
 
-            _context.Authors.Add(author);
-            await _context.SaveChangesAsync();
+            await _authorRepository.AddAsync(author);
 
             return Ok(author);
         }
@@ -60,7 +59,7 @@ namespace TheatreApp.Web.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuthor(int id, UpdateAuthorDto updateAuthorDto)
         {
-            var author = await _context.Authors.FindAsync(id);
+            var author = await _authorRepository.GetByIdAsync(id);
             if (author == null)
             {
                 return NotFound();
@@ -68,8 +67,7 @@ namespace TheatreApp.Web.Controllers
 
             author.AuthorName = updateAuthorDto.AuthorName;
 
-            _context.Authors.Update(author);
-            await _context.SaveChangesAsync();
+            await _authorRepository.UpdateAsync(author);
 
             return Ok(author);
         }
@@ -77,16 +75,29 @@ namespace TheatreApp.Web.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAuthor(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            if (author == null)
+            await _authorRepository.DeleteAsync(id);
+            return Ok(new { message = "Author deleted successfully." });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAuthors()
+        {
+            var authors = await _authorRepository.GetAllAsync();
+            if (authors == null || !authors.Any())
             {
                 return NotFound();
             }
 
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
+            var authorDtos = authors.Select(author => new AuthorDto
+            {
+                AuthorID = author.AuthorID,
+                AuthorName = author.AuthorName,
+                MovieAuthors = author.MovieAuthors.ToList()
+            }).ToList();
 
-            return NoContent();
+            return Ok(authorDtos);
         }
+
     }
 }
