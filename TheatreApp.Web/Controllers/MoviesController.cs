@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Models;
 using TheaterApp.Models;
+using TheatreApp.Web.Areas.Identity.Data;
 using TheatreApp.Web.Data;
 using TheatreApp.Web.Models.DTOs;
 using TheatreApp.Web.Models.DTOs.MoviesDTOs;
@@ -17,17 +18,15 @@ namespace TheatreApp.Web.Controllers
     [ApiController]
     public class MoviesController : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public MoviesController(AppDbContext context)
+        private readonly IMovieRepository _movieRepository;
+        public MoviesController(IMovieRepository movieRepository)
         {
-            _context = context;
+            _movieRepository = movieRepository;
         }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMovie(int id)
         {
-            var movie = await _context.Movies.FindAsync(id);
+            var movie = await _movieRepository.GetByIdAsync(id);
             if (movie == null)
             {
                 return NotFound();
